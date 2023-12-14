@@ -8,7 +8,6 @@ app.use("/files", express.static("files"));
 //mongodb connection----------------------------------------------
 const mongoUrl =
   "mongodb+srv://riyakochhar2001:NdSpmY5s6whGCH1A@test-demo-app.exc5quo.mongodb.net/?retryWrites=true&w=majority";
-// "mongodb+srv://adarsh:adarsh@cluster0.zllye.mongodb.net/?retryWrites=true&w=majority";
 
 mongoose
   .connect(mongoUrl, {
@@ -34,6 +33,21 @@ const storage = multer.diskStorage({
 require("./pdfDetails");
 const PdfSchema = mongoose.model("PdfDetails");
 const upload = multer({ storage: storage });
+
+app.delete("/delete-file/:id", async (req, res) => {
+  const fileId = req.params.id;
+  try {
+    const deletedFile = await PdfSchema.findByIdAndDelete(fileId);
+    if (!deletedFile) {
+      return res.status(404).json({ status: "File not found" });
+    }
+    res.json({ status: "ok", message: "File deleted successfully" });
+  } catch (error) {
+    res
+      .status(500)
+      .json({ status: "Error deleting file", error: error.message });
+  }
+});
 
 app.post("/upload-files", upload.single("file"), async (req, res) => {
   console.log(req.file);
